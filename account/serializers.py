@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.core.mail import send_mail
 from rest_framework import serializers
 
 
@@ -21,7 +22,7 @@ class RegistrationSerializer(serializers.Serializer):
         password_confirmation = attrs.pop('password_confirmation')
         if password != password_confirmation:
             raise serializers.ValidationError('Пароли не совпадают')
-        return password
+        return attrs
 
     def create(self):
         attrs = self.validated_data
@@ -55,8 +56,8 @@ class ActivationSerializer(serializers.Serializer):
 
     def activate(self):
         email = self.validated_data.get('email')
-        user = User.objects.filter(email=email)
-        user.is_activate = True
+        user = User.objects.get(email=email)
+        user.is_active = True
         user.activation_code = ''
         user.save()
 
@@ -84,31 +85,31 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-class ChangePasswordSerializer(serializers.Serializer):
-    old_pass = serializers.EmailField(required=True)
-    new_pass = serializers.CharField(required=True, min_length=6)
-    new_pass_confirm = serializers.CharField(required=True, min_length=6)
-
-    def validate_old_pass(self, old_pass):
-        user = self.context.get('request').user
-        if not user.check_password(old_pass):
-            raise serializers.ValidationError('Неверный пароль')
-        return old_pass
-        # old_pass = attrs.get('old_pass')
-        # new_pass = attrs.get('new_pass')
-
-    def validate(self, attrs):
-        new_pass = attrs.get('new_pass')
-        new_pass_confirm = attrs.get('new_pass_confirm')
-        if new_pass != new_pass_confirm:
-            raise serializers.ValidationError('Пароли не совпадают')
-        return attrs
-
-    def set_new_pass(self):
-        user = self.context.get('request').user
-        password = self.validated_data.get('new_pass')
-        user.set_password(password)
-        user.save()
+# class ChangePasswordSerializer(serializers.Serializer):
+#     old_pass = serializers.EmailField(required=True)
+#     new_pass = serializers.CharField(required=True, min_length=6)
+#     new_pass_confirm = serializers.CharField(required=True, min_length=6)
+#
+#     def validate_old_pass(self, old_pass):
+#         user = self.context.get('request').user
+#         if not user.check_password(old_pass):
+#             raise serializers.ValidationError('Неверный пароль')
+#         return old_pass
+#         # old_pass = attrs.get('old_pass')
+#         # new_pass = attrs.get('new_pass')
+#
+#     def validate(self, attrs):
+#         new_pass = attrs.get('new_pass')
+#         new_pass_confirm = attrs.get('new_pass_confirm')
+#         if new_pass != new_pass_confirm:
+#             raise serializers.ValidationError('Пароли не совпадают')
+#         return attrs
+#
+#     def set_new_pass(self):
+#         user = self.context.get('request').user
+#         password = self.validated_data.get('new_pass')
+#         user.set_password(password)
+#         user.save()
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
@@ -119,11 +120,11 @@ class ForgotPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError('Аккаунт не найден')
         return email
 
-    def send_activation_code(self):
+    def send_code(self):
         email = self.validated_data.get('email')
-        user = User.objects.filter(email=email)
+        user = User.objects.get(email=email)
         user.generate_activation_code()
-        user.send_mail(
+        send_mail(
             'Восстановление пароля',
             f'Ваш код подтверждения: {user.activation_code}',
             'admin@gmail.com',
@@ -133,14 +134,9 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 class ForgotPasswordCompleteSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    code = serializers.CharField(required=True)
-    password = serializers.CharField(required=True, min_length=6)
-    password_confirmation = serializers.CharField(required=True, min_length=6)
-
-    def validate_email(self, email):
-        if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError('Аккаунт не найден')
-        return email
+    code = serializers.CharField(min_length=8, max_length=8, required=True)
+    password = serializers.CharField(required=True)
+    password_confirmation = serializers.CharField(required=True)
 
     def validate_code(self, code):
         if not User.objects.filter(activation_code=code).exists():
@@ -156,8 +152,8 @@ class ForgotPasswordCompleteSerializer(serializers.Serializer):
 
     def set_new_pass(self):
         email = self.validated_data.get('email')
-        user = User.objects.filter(email=email)
         password = self.validated_data.get('password')
+        user = User.objects.get(email=email)
         user.set_password(password)
         user.activation_code = ''
         user.save()
