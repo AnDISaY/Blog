@@ -1,4 +1,4 @@
-from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
 
 
@@ -23,10 +23,10 @@ class UserManager(BaseUserManager):
         return self._create(email, password, **extra_fields)
 
 
-class User(models.Model):
-    name = models.CharField(max_length=30, blank=True)
+class User(AbstractBaseUser):
     email = models.EmailField(primary_key=True)
-    is_activate = models.BooleanField(default=False)
+    name = models.CharField(max_length=50, blank=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=8, blank=True)
 
@@ -41,25 +41,22 @@ class User(models.Model):
     def has_module_perms(self, app_label):
         return self.is_staff
 
-    def has_perm(self, obj):
+    def has_perm(self, obj=None):
         return self.is_staff
 
-    def generate_code(self):
+    def generate_activation_code(self):
         from django.utils.crypto import get_random_string
 
         code = get_random_string(8)
         self.activation_code = code
-        self.save
+        self.save()
         return code
 
     @staticmethod
     def send_activation_mail(email, code):
         from django.core.mail import send_mail
-
         message = f'Ваш код активации: {code}'
-        send_mail(
-            'Активация аккаунта',
-            message,
-            'test@gmail.com',
-            [email]
-        )
+        send_mail('Активация аккаунта',
+                  message,
+                  'test@gmail.com',
+                  [email])
