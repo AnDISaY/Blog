@@ -1,27 +1,15 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import DestroyAPIView, UpdateAPIView
-from rest_framework.mixins import CreateModelMixin, UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from posts.filter import PostFilter
 from posts.models import Post, Tag, Comment
 from posts.permissions import IsAdmin, IsAuthor
 from posts.serializers import PostSerializer, TagSerializer, CommentSerializer
-
-
-class UpdatePostView(UpdateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-
-class DeleteAPIView(DestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
 
 
 class PostViewSet(ModelViewSet):
@@ -46,26 +34,15 @@ class TagViewSet(ModelViewSet):
     permission_classes = [IsAdmin]
 
 
-class CommentViewSet(CreateModelMixin,
-                     UpdateModelMixin,
-                     DestroyModelMixin,
-                     GenericViewSet):
+class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated()]
+        if self.action == 'list':
+            return []
         return [IsAuthor()]
-
-
-
-
-
-
-
-
-
-
 
 
