@@ -8,6 +8,11 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 
+    # def validate_rating(self, rating):
+    #     if rating not in range(1, 6):
+    #         raise serializers.ValidationError('Рейтинг должен быть от 1 до 5')
+    #     return rating
+
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

@@ -15,21 +15,21 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=40)
+    title = models.CharField(max_length=100)
     description = models.TextField()
-    likes = models.IntegerField(blank=True)
+    likes = models.IntegerField(blank=True, null=True)
     tag = models.ForeignKey(Tag,
                             on_delete=models.RESTRICT,
                             related_name='posts')
     image = models.ImageField(upload_to='posts',
                               null=True,
                               blank=True)
-    rating = models.SmallIntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5)
-        ]
-    )
+    # rating = models.SmallIntegerField(
+    #     validators=[
+    #         MinValueValidator(1),
+    #         MaxValueValidator(5)
+    #     ]
+    # )
 
     class Meta:
         ordering = ['title']
