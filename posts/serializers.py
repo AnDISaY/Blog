@@ -6,7 +6,7 @@ from posts.models import Post, Tag,  Comment
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['title', 'description', 'tag', 'image', 'created_at']
 
     # def validate_rating(self, rating):
     #     if rating not in range(1, 6):
@@ -23,7 +23,7 @@ class TagSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['post', 'text', 'rating']
+        fields = ['post', 'text', 'rating', 'created_at']
 
     def validate_rating(self, rating):
         if rating not in range(1, 6):

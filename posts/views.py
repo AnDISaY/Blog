@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import DestroyAPIView
+from rest_framework.generics import DestroyAPIView, UpdateAPIView
 from rest_framework.mixins import CreateModelMixin, UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
 
@@ -12,6 +12,11 @@ from posts.filter import PostFilter
 from posts.models import Post, Tag, Comment
 from posts.permissions import IsAdmin, IsAuthor
 from posts.serializers import PostSerializer, TagSerializer, CommentSerializer
+
+
+class UpdatePostView(UpdateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
 
 
 class DeleteAPIView(DestroyAPIView):

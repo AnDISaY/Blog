@@ -4,7 +4,7 @@ from posts.models import Post
 
 
 class PostFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    name = filters.CharFilter(field_name='title', lookup_expr='icontains')
 
     class Meta:
         model = Post

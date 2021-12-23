@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -31,6 +33,8 @@ class Post(models.Model):
     #     ]
     # )
 
+    created_at = models.DateTimeField(default=datetime.now(), blank=True)
+
     class Meta:
         ordering = ['title']
 
@@ -54,7 +58,7 @@ class Comment(models.Model):
         ]
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # default=datetime.now(), blank=True
 
 
 
