@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from .views import (PostViewSet, TagViewSet,
-                    CommentViewSet, FavoritesListView, FavoritesCreateView, FavoritesDestroyView)
+                    CommentViewSet, FavoritesListView, FavoritesCreateView, FavoritesDestroyView, PostLikeViewSet)
 
 
 router = SimpleRouter()
@@ -10,6 +10,7 @@ router.register('post', PostViewSet)
 router.register('tags', TagViewSet)
 router.register('comments', CommentViewSet)
 # router.register('favorites_list', FavoritesListView)
+router.register('post_likes', PostLikeViewSet)
 
 
 urlpatterns = [
