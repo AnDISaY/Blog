@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-
 User = get_user_model()
 
 
@@ -33,7 +32,7 @@ class Post(models.Model):
     #     ]
     # )
 
-    created_at = models.DateTimeField(default=datetime.now(), blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
         ordering = ['title']
@@ -58,8 +57,17 @@ class Comment(models.Model):
         ]
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)  # default=datetime.now(), blank=True
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)  # default=datetime.now(), blank=True
 
 
+class Favorites(models.Model):
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='favorites',
+                             default='')
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE,
+                             related_name='favorites')
 
-
+    def __str__(self):
+        return '{0}'.format(self.post)
