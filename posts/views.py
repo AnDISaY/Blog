@@ -9,11 +9,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from posts.filter import PostFilter
-from posts.models import Post, Tag, Comment, Favorites
+from posts.models import Post, Tag, Comment, Favorites, PostLike
 from account.models import User
 from posts.permissions import IsAdmin, IsAuthor
 from posts.serializers import PostSerializer, TagSerializer, CommentSerializer, FavoritesGetSerializer, \
-    FavoritesCreateSerializer, FavoritesDestroySerializer
+    FavoritesCreateSerializer, FavoritesDestroySerializer, PostLikeSerializer
 
 
 class PostViewSet(ModelViewSet):
@@ -31,6 +31,13 @@ class PostViewSet(ModelViewSet):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
+    @action(['GET'], detail=True)
+    def post_like(self, request, pk):
+        post = self.get_object()
+        post_likes = post.post_likes.all()
+        serializer = PostLikeSerializer(post_likes, many=True)
+        return Response(serializer.data)
+
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
@@ -41,6 +48,18 @@ class TagViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        if self.action == 'list':
+            return []
+        return [IsAuthor()]
+
+
+class PostLikeViewSet(ModelViewSet):
+    queryset = PostLike.objects.all()
+    serializer_class = PostLikeSerializer
 
     def get_permissions(self):
         if self.action == 'create':

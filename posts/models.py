@@ -18,7 +18,6 @@ class Tag(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
-    likes = models.IntegerField(blank=True, null=True)
     tag = models.ForeignKey(Tag,
                             on_delete=models.RESTRICT,
                             related_name='posts')
@@ -58,6 +57,26 @@ class Comment(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)  # default=datetime.now(), blank=True
+
+    def __str__(self):
+        return f'{self.post}  ---  {self.text}'
+
+
+class PostLike(models.Model):
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='post_likes')
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE,
+                             related_name='post_likes')
+    post_like = models.SmallIntegerField(
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(1)
+        ])
+
+    def __str__(self):
+        return f'{self.post} - likes: {self.post_like}'
 
 
 class Favorites(models.Model):

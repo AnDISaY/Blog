@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
 from account.models import User
-from posts.models import Post, Tag, Comment, Favorites
+from posts.models import Post, Tag, Comment, Favorites, PostLike
 
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['title', 'description', 'tag', 'image', 'created_at']
+        fields = '__all__'
 
     # def validate_rating(self, rating):
     #     if rating not in range(1, 6):
@@ -30,6 +30,22 @@ class CommentSerializer(serializers.ModelSerializer):
         if rating not in range(1, 6):
             raise serializers.ValidationError('Рейтинг должен быть от 1 до 5')
         return rating
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['author'] = user
+        return super().create(validated_data)
+
+
+class PostLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostLike
+        fields = ['post', 'post_like']
+
+    def validate_likes(self, post_like):
+        if post_like not in range(0, 1):
+            raise serializers.ValidationError('Поставьте лайк: 0 или 1')
+        return post_like
 
     def create(self, validated_data):
         user = self.context['request'].user
