@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -15,6 +17,15 @@ class Tag(models.Model):
         return self.name
 
 
+class PostLike(models.Model):
+    user = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='post_likes')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
 class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -24,13 +35,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to='posts',
                               null=True,
                               blank=True)
-    # rating = models.SmallIntegerField(
-    #     validators=[
-    #         MinValueValidator(1),
-    #         MaxValueValidator(5)
-    #     ]
-    # )
-
+    likes = GenericRelation(PostLike)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
@@ -38,6 +43,10 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def total_likes(self):
+        return self.likes.count()
 
 
 class Comment(models.Model):
@@ -61,22 +70,6 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.post}  ---  {self.text}'
 
-
-class PostLike(models.Model):
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE,
-                               related_name='post_likes')
-    post = models.ForeignKey(Post,
-                             on_delete=models.CASCADE,
-                             related_name='post_likes')
-    post_like = models.SmallIntegerField(
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(1)
-        ])
-
-    def __str__(self):
-        return f'{self.post} - likes: {self.post_like}'
 
 
 class Favorites(models.Model):
